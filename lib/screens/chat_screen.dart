@@ -66,6 +66,7 @@ void messagesStreams()async{
           IconButton(
             onPressed: () {
               messagesStreams();
+
               /*
               _auth.signOut();
               Navigator.pop(context);*/
