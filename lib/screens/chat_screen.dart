@@ -34,19 +34,21 @@ class _ChatScreenState extends State<ChatScreen> {
       print(e);
     }
   }
- void getMessages() async{
+ /*void getMessages() async{
       final  messages= await _firestore.collection('messages').get();
       for(var message in messages.docs){
      print(message.data());
 
 
       }
- }
-/*void messagesStreams(){
-  await for (var snapshot _firestore.collection('messages').snapshots()){
-    for(var)
+ }*/
+void messagesStreams()async{
+  await for (var snapshot in _firestore.collection('messages').snapshots()){
+    for(var masg in snapshot.docs ){
+      print(masg.data());
+    };
   }
-}*/
+}
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +65,7 @@ class _ChatScreenState extends State<ChatScreen> {
         actions: [
           IconButton(
             onPressed: () {
-              getMessages();
+              messagesStreams();
               /*
               _auth.signOut();
               Navigator.pop(context);*/
