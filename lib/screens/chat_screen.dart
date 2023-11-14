@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+final _firestore=FirebaseFirestore.instance;
 
 class ChatScreen extends StatefulWidget {
   static const String screenRoute='Chat_Screen';
@@ -11,132 +12,192 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final _firestore =FirebaseFirestore.instance;
-  final _auth=FirebaseAuth.instance;
+  final messageTextController = TextEditingController();
+  final _auth = FirebaseAuth.instance;
   late User signedInUser;
-  String? messageText;
+
+  String messageText ="";
+
+  get builder => null;
   @override
-  void  initState(){
+  void initState() {
+// ignore: unused_local_variable
+    String ? messageText;
     super.initState();
-  getCurrentUser();
+    getcurrentuser();
   }
-
-  void getCurrentUser(){
-
-
-    try{ final user =_auth.currentUser;
-    if (user!=null){
-      signedInUser=user;
-      print(signedInUser.email);
-
-    }}
-    catch (e){
+  void getcurrentuser() {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        signedInUser = user;
+        print(signedInUser.email);
+      }
+    } catch (e) {
       print(e);
     }
   }
- /*void getMessages() async{
-      final  messages= await _firestore.collection('messages').get();
-      for(var message in messages.docs){
-     print(message.data());
-
-
-      }
- }*/
-void messagesStreams()async{
-  await for (var snapshot in _firestore.collection('messages').snapshots()){
-    for(var masg in snapshot.docs ){
-      print(masg.data());
-    };
+  void getmessage() async{
+    final message=await _firestore.collection('message').get();
+    for (var message in message.docs){
+      print(message.data());
+    }
   }
-}
+  void messageStream()async{
+    await for(var snapshot in _firestore.collection('message').snapshots() ){
+      for (var msg in snapshot.docs){
+        print(msg.data());
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.yellow[900],
+        backgroundColor: Colors.orange,
         title: Row(
           children: [
-            Image.asset('images/logo.png', height: 25),
-            SizedBox(width: 10),
-            Text('MessageMe')
+         /*   Image.asset(
+              'images/home_bage.jpg',
+              height: 25,
+            ),*/
+            const SizedBox(width: 10),
+            const Text('message me'),
           ],
         ),
         actions: [
           IconButton(
-            onPressed: () {
-              messagesStreams();
+            onPressed:(){
+        // _auth.signOut();
+        // Navigator.pop(context);
 
-              /*
-              _auth.signOut();
-              Navigator.pop(context);*/
+              getmessage();
+              messageStream();
             },
             icon: Icon(Icons.download),
           )
         ],
       ),
+
       body: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(),
+            MessageStreamBuiIder(),
             Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color: Colors.orange,
-                    width: 2,
-                  ),
-                ),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: TextField(
-                      onChanged: (value) {
-
-                       messageText=value;
-
-
-
-                      },
-
-
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: 10,
-                          horizontal: 20,
+                decoration: const BoxDecoration(
+                    border: Border(
+                        top: BorderSide(
+                          color: Colors.orange,
+                        ))),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: messageTextController,
+                        onChanged: (value) {
+                          messageText=value;
+                        },
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 20,
+                          ),
+                          hintText: 'your message here...',
+                          border: InputBorder.none,
                         ),
-                        hintText: 'Write your message here...',
-                        border: InputBorder.none,
                       ),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      _firestore.collection('messages').add({
-                        'text':messageText,
-                        'sender':signedInUser.email,
-                      });
-                      
-                    },
-                    child: Text(
-                      'send',
-                      style: TextStyle(
-                        color: Colors.blue[800],
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                    TextButton(
+                      onPressed: () {
+                        messageTextController.clear();
+                        _firestore.collection("messagea").add({
+                          'text' :messageText,
+                          'sender': signedInUser.email,
+
+                        });
+                      },
+                      child: const Text(
+                        'send',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
                       ),
                     ),
-                  )
-                ],
-              ),
-            ),
+                  ],
+                )),
           ],
         ),
       ),
     );
+  }
+}
+class MessageStreamBuiIder extends StatelessWidget {
+  const MessageStreamBuiIder({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>
+      (stream: _firestore.collection('messagea').snapshots(),
+        builder: (context, snapshots)
+        {
+          List<massegline>widgetmessage=[];
+          if(!snapshots.hasData){
+
+          }
+          final message =snapshots.data!.docs;
+          for (var msg in message)
+
+          {
+            final messageText=msg.get('text');
+            final msgSender=msg.get('sender');
+            final widget= massegline(sender: msgSender,text:messageText ,);
+            widgetmessage.add(widget);
+          }
+          return Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 10),
+              child: ListView(
+                children: widgetmessage,
+              ),
+            ),
+          );
+
+        },);
+
+  }
+}
+
+class massegline extends StatelessWidget {
+  const massegline({this.sender,this.text, super.key});
+final String? sender;
+final String? text;
+
+  @override
+  Widget build(BuildContext context) {
+     return Padding(
+        padding: const EdgeInsets.all(10.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+
+      children: [
+        Text("$sender",style: TextStyle(fontSize: 12,color: Colors.black38),),
+        Material(
+          elevation: 5,
+          borderRadius: BorderRadius.circular(30),
+        color: Colors.blue [800],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 20),
+          child: Text(
+           '$text' ,
+          style: TextStyle (fontSize:15,color:Colors.white,),),
+        )),
+      ],
+    ));
   }
 }
