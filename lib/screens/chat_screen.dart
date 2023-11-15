@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 final _firestore=FirebaseFirestore.instance;
-
+late User signedInUser;
 class ChatScreen extends StatefulWidget {
   static const String screenRoute='Chat_Screen';
   const ChatScreen({Key? key}) : super(key: key);
@@ -14,7 +14,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final messageTextController = TextEditingController();
   final _auth = FirebaseAuth.instance;
-  late User signedInUser;
+
 
   String messageText ="";
 
@@ -43,13 +43,13 @@ class _ChatScreenState extends State<ChatScreen> {
       print(message.data());
     }
   }
-  void messageStream()async{
+ /* void messageStream()async{
     await for(var snapshot in _firestore.collection('message').snapshots() ){
       for (var msg in snapshot.docs){
         print(msg.data());
       }
     }
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -58,10 +58,10 @@ class _ChatScreenState extends State<ChatScreen> {
         backgroundColor: Colors.orange,
         title: Row(
           children: [
-         /*   Image.asset(
-              'images/home_bage.jpg',
+            Image.asset(
+              'images/logo.png',
               height: 25,
-            ),*/
+            ),
             const SizedBox(width: 10),
             const Text('message me'),
           ],
@@ -69,13 +69,13 @@ class _ChatScreenState extends State<ChatScreen> {
         actions: [
           IconButton(
             onPressed:(){
-        // _auth.signOut();
-        // Navigator.pop(context);
+        _auth.signOut();
+        Navigator.pop(context);
 
-              getmessage();
-              messageStream();
+             /* getmessage();
+              messageStream();*/
             },
-            icon: Icon(Icons.download),
+            icon: Icon(Icons.close),
           )
         ],
       ),
@@ -117,6 +117,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         _firestore.collection("messagea").add({
                           'text' :messageText,
                           'sender': signedInUser.email,
+                          'time':FieldValue.serverTimestamp(),
 
                         });
                       },
@@ -143,28 +144,34 @@ class MessageStreamBuiIder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>
-      (stream: _firestore.collection('messagea').snapshots(),
+      (stream: _firestore.collection('messagea').orderBy('time').snapshots(),
         builder: (context, snapshots)
         {
           List<massegline>widgetmessage=[];
           if(!snapshots.hasData){
 
           }
-          final message =snapshots.data!.docs;
-          for (var msg in message)
-
-          {
+          final message =snapshots.data!.docs.reversed;
+          for (var msg in message) {
             final messageText=msg.get('text');
             final msgSender=msg.get('sender');
-            final widget= massegline(sender: msgSender,text:messageText ,);
+            final cruuntUser =signedInUser.email;
+
+
+
+            final widget= massegline(
+                sender: msgSender,
+                text:messageText ,
+                isme:cruuntUser ==msgSender
+            );
             widgetmessage.add(widget);
           }
           return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 10),
-              child: ListView(
+            child: ListView(
+             reverse:true ,
+              padding:  EdgeInsets.symmetric(horizontal: 10,vertical: 20),
                 children: widgetmessage,
-              ),
+
             ),
           );
 
@@ -174,23 +181,35 @@ class MessageStreamBuiIder extends StatelessWidget {
 }
 
 class massegline extends StatelessWidget {
-  const massegline({this.sender,this.text, super.key});
+  const massegline({this.sender,required this.isme,this.text, super.key});
 final String? sender;
 final String? text;
+final bool isme ;
+
 
   @override
   Widget build(BuildContext context) {
      return Padding(
         padding: const EdgeInsets.all(10.0),
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: isme? CrossAxisAlignment.end:CrossAxisAlignment.start,
 
       children: [
         Text("$sender",style: TextStyle(fontSize: 12,color: Colors.black38),),
         Material(
           elevation: 5,
-          borderRadius: BorderRadius.circular(30),
-        color: Colors.blue [800],
+          borderRadius: isme? BorderRadius.only(
+            topLeft: Radius.circular(30),
+            bottomLeft: Radius.circular(30),
+            bottomRight:  Radius.circular(30),
+
+          ):BorderRadius.only(
+            topRight: Radius.circular(30),
+            bottomLeft: Radius.circular(30),
+            bottomRight:  Radius.circular(30),
+
+          ),
+        color:isme? Colors.blue [800]:Colors.red,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 20),
           child: Text(
