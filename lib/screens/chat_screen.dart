@@ -55,11 +55,11 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.orange,
+        backgroundColor: Colors.black,
         title: Row(
           children: [
             Image.asset(
-              'images/logo.png',
+              'images/chatIcon.png',
               height: 25,
             ),
             const SizedBox(width: 10),
@@ -75,7 +75,7 @@ class _ChatScreenState extends State<ChatScreen> {
              /* getmessage();
               messageStream();*/
             },
-            icon: Icon(Icons.close),
+            icon: Icon(Icons.output),
           )
         ],
       ),
@@ -90,7 +90,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 decoration: const BoxDecoration(
                     border: Border(
                         top: BorderSide(
-                          color: Colors.orange,
+                          color: Colors.cyan,
                         ))),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,

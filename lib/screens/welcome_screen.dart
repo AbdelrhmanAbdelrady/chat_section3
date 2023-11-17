@@ -28,7 +28,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               children: [
                 Container(
                   height: 180,
-                  child: Image.asset('images/logo.png'),
+                  child: Image.asset('images/chatIcon.png'),
                 ),
                 Text(
                   'MessageMe',
